@@ -1,0 +1,18 @@
+{
+    "autosu": true,
+    "colorscheme": "dukedark-tc",
+    "eofnewline": false,
+    "ft:go": {
+        "tabstospaces": false
+    },
+    "hlsearch": true,
+    "mkparents": true,
+    "savecursor": true,
+    "savehistory": false,
+    "scrollspeed": 3,
+    "statusformatl": "$(filename)",
+    "statusformatr": "$(lines)",
+    "statusline": false,
+    "tabsize": 2,
+    "tabstospaces": true
+}
