@@ -3,6 +3,7 @@
 (setq-default indent-tabs-mode nil)
 (setq make-backup-files nil)
 (setq dired-kill-when-opening-new-dired-buffer t)
+(setq kill-whole-line t)
 
 (global-set-key (kbd "TAB") (lambda () (interactive) (insert-char 32 2)))
 (global-set-key (kbd "C-x C-k") 'kill-current-buffer)
@@ -10,17 +11,38 @@
 (global-display-line-numbers-mode)
 (tool-bar-mode 0)
 (menu-bar-mode 0)
+(context-menu-mode 0)
 (scroll-bar-mode 0)
-(set-face-attribute 'default nil :height 220)
+(set-face-attribute 'default nil :height 165)
 (add-to-list 'default-frame-alist '(undecorated . t))
 (ido-mode)
 (ido-everywhere)
 
-(defun my-buffer-skip-condition (window buffer bury-or-kill)
-  "Skip boring buffers when cycling."
-  (string-prefix-p "*" (buffer-name buffer)))
-
+(setq-default switch-to-prev-buffer-skip-regexp
+              (concat "\\(" 
+                      "\\*Messages\\*" 
+                      "\\|\\*magit-process:.*\\*" ; Matches "magit-process: dotfiles" etc.
+                      "\\|\\*magit-diff:.*\\*" 
+                      "\\|\\*magit-status:.*\\*"
+                      "\\|\\*Help\\*"
+                      "\\)"))
 (setq-default switch-to-prev-buffer-skip 'my-buffer-skip-condition)
+
+(with-eval-after-load 'magit
+  (define-key magit-mode-map (kbd "<C-tab>") nil)
+  (define-key magit-section-mode-map (kbd "<C-tab>") nil))
+
+(setq-default mode-line-format
+      '("%e "
+;;        (:eval (propertize "%b" 'face '(:weight bold :foreground "#51afef"))) ;; Current file
+        " "
+        (:eval (mapconcat 'buffer-name 
+                (seq-filter (lambda (b) 
+                              (let ((name (buffer-name b)))
+                                ;; Ignore if it starts with " " or "*"
+                                (not (or (string-prefix-p "*" name)
+                                         (string-prefix-p " " name)))))
+                            (buffer-list)) " | "))))
 
 ;; Auto installers for Gruber-Darker, Magit, & Multiple Cursors.
 ;; --- Package System Setup ---
