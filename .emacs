@@ -16,6 +16,11 @@
 (ido-mode)
 (ido-everywhere)
 
+(defun my-buffer-skip-condition (window buffer bury-or-kill)
+  "Skip boring buffers when cycling."
+  (string-prefix-p "*" (buffer-name buffer)))
+
+(setq-default switch-to-prev-buffer-skip 'my-buffer-skip-condition)
 
 ;; Auto installers for Gruber-Darker, Magit, & Multiple Cursors.
 ;; --- Package System Setup ---
@@ -56,10 +61,11 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages nil))
+ '(package-selected-packages '(gruber-darker-theme magit multiple-cursors)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+(put 'upcase-region 'disabled nil)
