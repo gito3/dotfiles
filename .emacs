@@ -4,7 +4,6 @@
 (setq make-backup-files nil)
 (setq dired-kill-when-opening-new-dired-buffer t)
 (setq kill-whole-line t)
-
 (global-set-key (kbd "TAB") (lambda () (interactive) (insert-char 32 2)))
 (global-set-key (kbd "C-x C-k") 'kill-current-buffer)
 (global-set-key (kbd "<C-tab>") 'next-buffer)
@@ -18,31 +17,33 @@
 (ido-mode)
 (ido-everywhere)
 
-(setq-default switch-to-prev-buffer-skip-regexp
-              (concat "\\(" 
-                      "\\*Messages\\*" 
-                      "\\|\\*magit-process:.*\\*" ; Matches "magit-process: dotfiles" etc.
-                      "\\|\\*magit-diff:.*\\*" 
-                      "\\|\\*magit-status:.*\\*"
-                      "\\|\\*Help\\*"
-                      "\\)"))
-(setq-default switch-to-prev-buffer-skip 'my-buffer-skip-condition)
+(setq-default switch-to-prev-buffer-skip-regexp "\\*\\(Messages\\|magit-.*\\|Help\\)\\*")
 
 (with-eval-after-load 'magit
   (define-key magit-mode-map (kbd "<C-tab>") nil)
   (define-key magit-section-mode-map (kbd "<C-tab>") nil))
 
+(add-hook 'magit-process-terminated-hook
+          (lambda (proc _evt)
+            (when (and (eq (process-status proc) 'exit) (zerop (process-exit-status proc)))
+              (kill-buffer (process-buffer proc)))))
+
+(setq magit-bury-buffer-function #'magit-mode-quit-window)
+
 (setq-default mode-line-format
       '("%e "
-;;        (:eval (propertize "%b" 'face '(:weight bold :foreground "#51afef"))) ;; Current file
+        (:propertize "%b" face (:weight bold :foreground "#51afef"))
+        (:propertize " " display (space :align-to (+ center -15)))
         " "
-        (:eval (mapconcat 'buffer-name 
-                (seq-filter (lambda (b) 
-                              (let ((name (buffer-name b)))
-                                ;; Ignore if it starts with " " or "*"
-                                (not (or (string-prefix-p "*" name)
-                                         (string-prefix-p " " name)))))
-                            (buffer-list)) " | "))))
+        (:eval (mapconcat #'buffer-name 
+                          (seq-filter (lambda (b) 
+                                        (let ((n (buffer-name b)))
+                                          (and (not (eq b (current-buffer)))
+                                               (not (string-prefix-p " " n))
+                                               (or (not (string-prefix-p "*" n))
+                                                   (string-match-p "\\*\\(scratch\\|.*[a-zA-Z].*\\)\\*" n))
+                                               (not (string-match-p "\\*\\(Messages\\|magit-.*\\|Help\\)\\*" n)))))
+                                      (buffer-list)) " | "))))
 
 ;; Auto installers for Gruber-Darker, Magit, & Multiple Cursors.
 ;; --- Package System Setup ---
